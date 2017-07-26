@@ -105,18 +105,20 @@ if __name__ == '__main__':
             for condition in islice(tf, 1, 2):
                 print('yolo')
                 print('''-----------------
+Location: {}
 Date/Time: {}  
 Weather Status: {} ({})
 Cloud Coverage: {}
 Rain: {}
 Wind Speed: {[speed]}
+
 Morning Temperature: {[day]}\xb0C
 Night Temperature: {[night]}\xb0C
 Min Temperature: {[min]}\xb0C
 Max Temperature: {[max]}\xb0C
 ----------------------------
              '''
-                      .format(condition.get_reference_time('iso'), condition.get_status(),
+                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
                               condition.get_wind(), condition.get_temperature(unit='celsius'),
                               condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
@@ -125,36 +127,45 @@ Max Temperature: {[max]}\xb0C
 
         elif 'today' in ip:
             for condition in islice(tf3, 0, 3):
-                print('mama')
-                print('''Date/Time: {} 
+                print('mamamia')
+                print('''-----------------
+Location: {}
+Date/Time: {} 
 Weather Status: {} ({})
 Cloud Coverage: {}
 Rain: {}
 Wind Speed: {[speed]}
+
 Temperature: {[temp]}\xb0C
+Min Temperature: {[temp_min]}\xb0C
+Max Temperature: {[temp_max]}\xb0C
+----------------------------
 
                       '''
-                      .format(condition.get_reference_time('iso'), condition.get_status(),
+                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
                               condition.get_wind(), condition.get_temperature(unit='celsius'),
+                              condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius')
                               ))
 
         elif 'week' in ip:
             for condition in wf:
                 print('hola')
                 print('''-----------------
+Location: {}
 Date/Time: {}  
 Weather Status: {} ({})
 Cloud Coverage: {}
 Rain: {}
 Wind Speed: {[speed]}
+
 Morning Temperature: {[day]}\xb0C
 Night Temperature: {[night]}\xb0C
 Min Temperature: {[min]}\xb0C
 Max Temperature: {[max]}\xb0C
 ----------------------------
                              '''
-                      .format(condition.get_reference_time('iso'), condition.get_status(),
+                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
                               condition.get_wind(), condition.get_temperature(unit='celsius'),
                               condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
