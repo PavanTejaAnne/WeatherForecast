@@ -3,20 +3,128 @@ import json
 import urllib.request
 from pyowm import OWM
 from itertools import islice
- # import requests
-# send_url = 'http://freegeoip.net/json'
-# r = requests.get(send_url)
-# j = json.loads(r.text)
-# lat = j['latitude']
-# lon = j['longitude']
+import requests
 
-user_api = '1f06c99f1678cc081eff475a29df81da'
-unit = 'metric'
+send_url = 'http://freegeoip.net/json'
+r = requests.get(send_url)
+j = json.loads(r.text)
+lati = j['latitude']
+longi = j['longitude']
 
 adversities = ['sunny','hazy', 'rain', 'windy', 'raining', 'hot', 'snowing','snow','hail', 'hailing',
            'rainy','snowy', 'drizzle', 'drizzling', 'cold']
 
-forecast = ['tomorrow', 'week']
+forecast = ['tomorrow', 'week','today']
+rains = ['rain','rainy', 'raincoat', 'rainfall', 'drizzle', 'drizzling']
+puffs = ['snow', 'snowy', 'snowing', 'snowfall']
+
+unit = 'metric'
+API_key = '1f06c99f1678cc081eff475a29df81da'
+
+owm = OWM(API_key)
+owm.get_API_key()
+
+ip = input('Enter your query:').split(" ")
+
+obs = owm.weather_at_place(str(ip))
+obs.get_reception_time(timeformat='iso')
+w = obs.get_weather()
+l = obs.get_location()
+
+today_forecast_3hrs = owm.three_hours_forecast(str(ip))
+tf3 = today_forecast_3hrs.get_forecast()
+
+tomorrow_forecast = owm.daily_forecast(str(ip))
+tf = tomorrow_forecast.get_forecast()
+
+weekly_forecast = owm.daily_forecast(str(ip))
+wf = weekly_forecast.get_forecast()
+
+
+def tomorrow_weather():
+    for condition in islice(tf, 1, 2):
+        print('yolo')
+        print('''-----------------
+    Location: {}
+    Date/Time: {}  
+    Weather Status: {} ({})
+    Cloud Coverage: {}%
+    Rain: {}
+    Wind Speed: {[speed]}
+
+    Morning Temperature: {[day]}\xb0C
+    Night Temperature: {[night]}\xb0C
+    Min Temperature: {[min]}\xb0C
+    Max Temperature: {[max]}\xb0C
+    ----------------------------
+                 '''
+              .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+                      condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+                      condition.get_wind(), condition.get_temperature(unit='celsius'),
+                      condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
+                      condition.get_temperature(unit='celsius')
+                      ))
+
+def today_weather():
+    for condition in islice(tf3, 0, 3):
+        print('mamamia')
+        print('''-----------------
+    Location: {}
+    Date/Time: {} 
+    Weather Status: {} ({})
+    Cloud Coverage: {}%
+    Rain: {}
+    Wind Speed: {[speed]}
+
+    Temperature: {[temp]}\xb0C
+    Min Temperature: {[temp_min]}\xb0C
+    Max Temperature: {[temp_max]}\xb0C
+    ----------------------------
+
+                          '''
+              .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+                      condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+                      condition.get_wind(), condition.get_temperature(unit='celsius'),
+                      condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius')
+                      ))
+
+def week_weather():
+    for condition in wf:
+        print('hola')
+        print('''-----------------
+    Location: {}
+    Date/Time: {}  
+    Weather Status: {} ({})
+    Cloud Coverage: {}%
+    Rain: {}
+    Wind Speed: {[speed]}
+
+    Morning Temperature: {[day]}\xb0C
+    Night Temperature: {[night]}\xb0C
+    Min Temperature: {[min]}\xb0C
+    Max Temperature: {[max]}\xb0C
+    ----------------------------
+                                 '''
+              .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+                      condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+                      condition.get_wind(), condition.get_temperature(unit='celsius'),
+                      condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
+                      condition.get_temperature(unit='celsius')
+                      ))
+
+def forecaster():
+    if any(s in forecast for s in ip):
+        if 'tomorrow' in ip:
+            tomorrow_weather()
+
+        elif 'today' in ip:
+            today_weather()
+
+        elif 'week' in ip:
+            week_weather()
+        else:
+            output(data_organizer(data_collection(url_cord(lati, longi))))
+
 
 def time_converter(time):
     converted_time = datetime.datetime.fromtimestamp(
@@ -27,7 +135,13 @@ def time_converter(time):
 
 def url(city_name):
     full_api_url = 'http://api.openweathermap.org/data/2.5/weather?q=' + str(city_name) +\
-                   '&mode=json&units=' + unit + '&APPID=' + user_api
+                   '&mode=json&units=' + unit + '&APPID=' + API_key
+    return full_api_url
+
+
+def url_cord(lat, longt):
+    full_api_url = 'http://api.openweathermap.org/data/2.5/weather?lat=' + str(lat) +'&lon='+\
+                   str(longt)+'&mode=json&units=' + unit + '&APPID=' + API_key
     return full_api_url
 
 
@@ -65,11 +179,11 @@ def output(data):
     s = '''---------------------------------------
 Current weather in: {city}, {country}:
 {temp}{m_symbol} {sky}
-Max: {temp_max}, Min: {temp_min}
+Max Temp: {temp_max}, Min Temp: {temp_min}
 
 Wind Speed: {wind}, Degree: {wind_deg}
-Humidity: {humidity}
-Cloud: {cloudiness}
+Humidity: {humidity}%
+Cloud: {cloudiness}%
 Pressure: {pressure}
 Sunrise at: {sunrise}
 Sunset at: {sunset}
@@ -80,100 +194,117 @@ Last Called: {dt}
 
 if __name__ == '__main__':
 
-    API_key = '1f06c99f1678cc081eff475a29df81da'
-    owm = OWM(API_key)
-    owm.get_API_key()
-
     try:
-        ip = input('Enter your query:').split(" ")
+         if any(s in ip for s in forecast):
+            if any(s in ip for s in rains):
+                print('looped through rain')
+                if today_forecast_3hrs.will_have_rain() == True:
+                    print('Yes you might need a raincoat')
+                else:
+                    print('Nah! Its a pretty good day for your favorite activity')
 
-        obs = owm.weather_at_place(str(ip))
-        obs.get_reception_time(timeformat='iso')
-        w = obs.get_weather()
-        l = obs.get_location()
+            elif any(s in ip for s in puffs):
+                print('looped through snow')
+                if today_forecast_3hrs.will_have_snow() == True:
+                    print('Yes get your skis out')
 
-        today_forecast_3hrs = owm.three_hours_forecast(str(ip))
-        tf3 = today_forecast_3hrs.get_forecast()
+            elif 'sunrise' in ip:
+                w.get_sunrise_time('iso')
+                print('sunrise')
+            elif 'sunset' in ip:
+                w.get_sunset_time('iso')
+                print('sunset')
+            else:
+                forecaster()
+                print("you're here")
+         else:
+             output(data_organizer(data_collection(url(ip))))
 
-        tomorrow_forecast = owm.daily_forecast(str(ip))
-        tf = tomorrow_forecast.get_forecast()
 
-        weekly_forecast = owm.daily_forecast(str(ip))
-        wf = weekly_forecast.get_forecast()
+    #     elif any(s in forecast for s in ip):
+    #
+    #         if 'tomorrow' in ip:
+    #             tomorrow_weather()
+    # #             for condition in islice(tf, 1, 2):
+    # #                 print('yolo')
+    # #                 print('''-----------------
+    # # Location: {}
+    # # Date/Time: {}
+    # # Weather Status: {} ({})
+    # # Cloud Coverage: {}%
+    # # Rain: {}
+    # # Wind Speed: {[speed]}
+    # #
+    # # Morning Temperature: {[day]}\xb0C
+    # # Night Temperature: {[night]}\xb0C
+    # # Min Temperature: {[min]}\xb0C
+    # # Max Temperature: {[max]}\xb0C
+    # # ----------------------------
+    # #              '''
+    # #                       .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+    # #                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+    # #                               condition.get_wind(), condition.get_temperature(unit='celsius'),
+    # #                               condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
+    # #                               condition.get_temperature(unit='celsius')
+    # #                               ))
+    #
+    #         elif 'today' in ip:
+    #             today_weather()
+    # #             for condition in islice(tf3, 0, 3):
+    # #                 print('mamamia')
+    # #                 print('''-----------------
+    # # Location: {}
+    # # Date/Time: {}
+    # # Weather Status: {} ({})
+    # # Cloud Coverage: {}%
+    # # Rain: {}
+    # # Wind Speed: {[speed]}
+    # #
+    # # Temperature: {[temp]}\xb0C
+    # # Min Temperature: {[temp_min]}\xb0C
+    # # Max Temperature: {[temp_max]}\xb0C
+    # # ----------------------------
+    # #
+    # #                       '''
+    # #                       .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+    # #                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+    # #                               condition.get_wind(), condition.get_temperature(unit='celsius'),
+    # #                               condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius')
+    # #                               ))
+    #
+    #         elif 'week' in ip:
+    #             week_weather()
+    # #             for condition in wf:
+    # #                 print('hola')
+    # #                 print('''-----------------
+    # # Location: {}
+    # # Date/Time: {}
+    # # Weather Status: {} ({})
+    # # Cloud Coverage: {}%
+    # # Rain: {}
+    # # Wind Speed: {[speed]}
+    # #
+    # # Morning Temperature: {[day]}\xb0C
+    # # Night Temperature: {[night]}\xb0C
+    # # Min Temperature: {[min]}\xb0C
+    # # Max Temperature: {[max]}\xb0C
+    # # ----------------------------
+    # #                              '''
+    # #                       .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
+    # #                               condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
+    # #                               condition.get_wind(), condition.get_temperature(unit='celsius'),
+    # #                               condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
+    # #                               condition.get_temperature(unit='celsius')
+    # #                               ))
+    #
+    #         else:
+    #             pass
+    #
+    #     else:
+    #         output(data_organizer(data_collection(url_cord(lati,longi))))
 
-        if 'tomorrow' in ip:
-            for condition in islice(tf, 1, 2):
-                print('yolo')
-                print('''-----------------
-Location: {}
-Date/Time: {}  
-Weather Status: {} ({})
-Cloud Coverage: {}
-Rain: {}
-Wind Speed: {[speed]}
 
-Morning Temperature: {[day]}\xb0C
-Night Temperature: {[night]}\xb0C
-Min Temperature: {[min]}\xb0C
-Max Temperature: {[max]}\xb0C
-----------------------------
-             '''
-                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
-                              condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
-                              condition.get_wind(), condition.get_temperature(unit='celsius'),
-                              condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
-                              condition.get_temperature(unit='celsius')
-                              ))
-
-        elif 'today' in ip:
-            for condition in islice(tf3, 0, 3):
-                print('mamamia')
-                print('''-----------------
-Location: {}
-Date/Time: {} 
-Weather Status: {} ({})
-Cloud Coverage: {}
-Rain: {}
-Wind Speed: {[speed]}
-
-Temperature: {[temp]}\xb0C
-Min Temperature: {[temp_min]}\xb0C
-Max Temperature: {[temp_max]}\xb0C
-----------------------------
-
-                      '''
-                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
-                              condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
-                              condition.get_wind(), condition.get_temperature(unit='celsius'),
-                              condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius')
-                              ))
-
-        elif 'week' in ip:
-            for condition in wf:
-                print('hola')
-                print('''-----------------
-Location: {}
-Date/Time: {}  
-Weather Status: {} ({})
-Cloud Coverage: {}
-Rain: {}
-Wind Speed: {[speed]}
-
-Morning Temperature: {[day]}\xb0C
-Night Temperature: {[night]}\xb0C
-Min Temperature: {[min]}\xb0C
-Max Temperature: {[max]}\xb0C
-----------------------------
-                             '''
-                      .format(l.get_name(), condition.get_reference_time('iso'), condition.get_status(),
-                              condition.get_detailed_status(), condition.get_clouds(), condition.get_rain(),
-                              condition.get_wind(), condition.get_temperature(unit='celsius'),
-                              condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius'),
-                              condition.get_temperature(unit='celsius')
-                              ))
-
-        else:
-            output(data_organizer(data_collection(url(ip))))
 
     except IOError:
         print('Some error buddy boy')
+
