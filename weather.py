@@ -25,14 +25,13 @@ def time_converter(time):
     return converted_time
 
 
-def url_builder_name(city_name):
-    api = 'http://api.openweathermap.org/data/2.5/weather?q='
-    full_api_url = api + str(city_name) +\
+def url(city_name):
+    full_api_url = 'http://api.openweathermap.org/data/2.5/weather?q=' + str(city_name) +\
                    '&mode=json&units=' + unit + '&APPID=' + user_api
     return full_api_url
 
 
-def data_fetch(full_api_url):
+def data_collection(full_api_url):
     with urllib.request.urlopen(full_api_url) as url:
         return json.loads(url.read().decode('utf-8'))
 
@@ -60,7 +59,7 @@ def data_organizer(raw_data):
     return data
 
 
-def data_output(data):
+def output(data):
 
     data['m_symbol'] = '\xb0' + 'C'
     s = '''---------------------------------------
@@ -75,7 +74,7 @@ Pressure: {pressure}
 Sunrise at: {sunrise}
 Sunset at: {sunset}
 
-Last update from the server: {dt}
+Last Called: {dt}
 ---------------------------------------'''
     print(s.format(**data))
 
@@ -163,7 +162,7 @@ Max Temperature: {[max]}\xb0C
                               ))
 
         else:
-            data_output(data_organizer(data_fetch(url_builder_name(ip))))
+            output(data_organizer(data_collection(url(ip))))
 
     except IOError:
         print('Some error buddy boy')
