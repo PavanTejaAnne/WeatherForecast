@@ -123,6 +123,7 @@ def forecaster():
         elif 'week' in ip:
             week_weather()
         else:
+            print('yoloma')
             output(data_organizer(data_collection(url_cord(lati, longi))))
 
 
@@ -196,19 +197,19 @@ if __name__ == '__main__':
 
     try:
          if any(s in ip for s in forecast):
-            if any(s in ip for s in rains):
+            if any(z in ip for z in rains):
                 print('looped through rain')
                 if today_forecast_3hrs.will_have_rain() == True:
                     print('Yes you might need a raincoat')
                 else:
                     print('Nah! Its a pretty good day for your favorite activity')
 
-            elif any(s in ip for s in puffs):
+            elif any(x in ip for x in puffs):
                 print('looped through snow')
                 if today_forecast_3hrs.will_have_snow() == True:
                     print('Yes get your skis out')
 
-            elif 'sunrise' in ip:
+            elif any(a in ip for a in ('sunrise','sun rise')):
                 w.get_sunrise_time('iso')
                 print('sunrise')
             elif 'sunset' in ip:
@@ -218,6 +219,7 @@ if __name__ == '__main__':
                 forecaster()
                 print("you're here")
          else:
+             print("you're here")
              output(data_organizer(data_collection(url(ip))))
 
 
