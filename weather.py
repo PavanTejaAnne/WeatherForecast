@@ -45,7 +45,6 @@ wf = weekly_forecast.get_forecast()
 
 def tomorrow_weather():
     for condition in islice(tf, 1, 2):
-        print('yolo')
         print('''-----------------
     Location: {}
     Date/Time: {}  
@@ -67,9 +66,9 @@ def tomorrow_weather():
                       condition.get_temperature(unit='celsius')
                       ))
 
+
 def today_weather():
     for condition in islice(tf3, 0, 7):
-        print('mamamia')
         print('''-----------------
     Location: {}
     Date/Time: {} 
@@ -90,9 +89,9 @@ def today_weather():
                       condition.get_temperature(unit='celsius'), condition.get_temperature(unit='celsius')
                       ))
 
+
 def week_weather():
     for condition in wf:
-        print('hola')
         print('''-----------------
     Location: {}
     Date/Time: {}  
@@ -114,17 +113,20 @@ def week_weather():
                       condition.get_temperature(unit='celsius')
                       ))
 
+
 def is_raining():
     if today_forecast_3hrs.will_have_rain():
         print('Yes you might need a raincoat')
     else:
         print('Nah! Its a pretty good day for your favorite activity')
 
+
 def is_snowing():
     if today_forecast_3hrs.will_have_snow():
         print('Yes get your skis out')
     else:
         print('Nah! Let the shovels rest ')
+
 
 def forecaster():
     if any(s in forecast for s in ip):
@@ -138,6 +140,7 @@ def forecaster():
             week_weather()
         else:
             output(data_organizer(data_collection(url_cord(lati, longi))))
+
 
 def time_converter(time):
     converted_time = datetime.datetime.fromtimestamp(
@@ -210,10 +213,8 @@ if __name__ == '__main__':
     try:
         if any(s in ip for s in adversities):
             if any(s in ip for s in rains):
-                print("Raining")
                 is_raining()
             elif any(s in ip for s in puffs):
-                print("Snowing")
                 is_snowing()
 
         elif any(s in ip for s in rise):
@@ -227,12 +228,11 @@ if __name__ == '__main__':
                         .strftime('%Y-%m-%d %H:%M:%S')
                 )
         else:
-            if 'today' in ip:
-                output(data_organizer(data_collection(url(ip))))
-                print("you're here")
-            else:
+            if any(s in ip for s in forecast):
                 forecaster()
+            else:
+                output(data_organizer(data_collection(url(ip))))
 
     except IOError:
-        print('Some error buddy boy')
+        print('Some error')
 
